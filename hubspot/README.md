@@ -74,3 +74,15 @@ milliseconds per the HubSpot v3 search API. Requires `HUBSPOT_ACCESS_TOKEN`
 `HUBSPOT_ACCESS_TOKEN` — a HubSpot private app token. The `@agent` decorator
 declares it under `environment.required`; the daemon resolves it from the
 environment and exposes it as `ctx.env["HUBSPOT_ACCESS_TOKEN"]`.
+
+## Tests
+
+```bash
+uv run pytest
+```
+
+The suite ([`tests/`](tests/)) needs no HubSpot account — it calls `execute()`
+directly with a hand-built `AgentContext` whose `ctx.http` is a mock, the same
+injection seam the SDK's own tests use (`Http(http_fetch=...)`). It covers the
+config parsing, the request body, the response parsing, and the handler's
+success and error paths.

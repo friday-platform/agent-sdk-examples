@@ -95,12 +95,17 @@ More to come — each new example lands as its own top-level directory.
 ## Contributing
 
 A new example is a top-level directory with its own `agent.py`, `README.md`,
-`pyproject.toml`, and `uv.lock`. Lint and format are shared from the repo root
-([`ruff.toml`](ruff.toml)) and enforced in CI:
+`pyproject.toml`, `uv.lock`, and a `tests/` suite. Lint and format are shared
+from the repo root ([`ruff.toml`](ruff.toml)); tests run per example. CI
+enforces all three:
 
 ```bash
+# lint + format (whole repo, from the root)
 uv run ruff check .
 uv run ruff format .
+
+# tests (from an example directory)
+cd hubspot && uv run pytest
 ```
 
 ## License

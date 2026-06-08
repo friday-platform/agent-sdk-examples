@@ -10,4 +10,12 @@ dependencies = [
     "friday-agent-sdk>=0.1.8",
 ]
 
+[dependency-groups]
+dev = ["pytest>=8"]
+
 # Ruff config lives at the repo root (../ruff.toml) and applies to this example.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Make the single-file agent importable as `import agent` from the tests.
+pythonpath = ["."]

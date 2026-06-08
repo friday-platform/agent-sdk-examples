@@ -1,0 +1,13 @@
+[project]
+name = "friday-hubspot-agent"
+version = "1.0.0"
+description = "Deterministic HubSpot ticket-search agent — searches the configured pipeline stage(s) for tickets created within a recent window and returns their IDs."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Tempest Labs, Inc.", email = "security@hellofriday.ai" }]
+dependencies = [
+    "friday-agent-sdk>=0.1.8",
+]
+
+# Ruff config lives at the repo root (../ruff.toml) and applies to this example.

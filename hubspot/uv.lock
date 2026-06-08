@@ -1,0 +1,35 @@
+version = 1
+revision = 3
+requires-python = ">=3.12"
+
+[[package]]
+name = "friday-agent-sdk"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nats-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/65/c7/02a25e3aa9024f937d4bc49f79e221a6d5971c5248eb1d29900eaeed957b/friday_agent_sdk-0.1.9.tar.gz", hash = "sha256:deac736d81b537f9248ee70f8665764639b5541db1dd852fcba8cec4d39f11eb", size = 22000, upload-time = "2026-05-15T04:21:42.478Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/2e/8249fb7a9dc7ab4b521bc32de59447f140fcd637c3384aaa8152d9bb346d/friday_agent_sdk-0.1.9-py3-none-any.whl", hash = "sha256:4f4fca2bf4257a453f9c97a0bfc8aa80584ce5cbcb403c54f22d51b158e0eba9", size = 18296, upload-time = "2026-05-15T04:21:41.307Z" },
+]
+
+[[package]]
+name = "friday-hubspot-agent"
+version = "1.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "friday-agent-sdk" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "friday-agent-sdk", specifier = ">=0.1.8" }]
+
+[[package]]
+name = "nats-py"
+version = "2.15.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/02/f0/fc5e93f2b0dd14a202590ad9d30eda1955ea872039b5204357348d0f4b1e/nats_py-2.15.0.tar.gz", hash = "sha256:6622c547d9a7d2313d9c147d46c386188f4ec2c7b5c9f9a0438a4d1b55f54a93", size = 75995, upload-time = "2026-06-05T07:34:03.904Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/db/a8/b55606c7c621fb813c8ec78baf201d2c78bf6051091ec0c7ada572999e95/nats_py-2.15.0-py3-none-any.whl", hash = "sha256:9f8d36aa52a9926a88b8f1d70cf1fdce0ad387941479b500ee9ab3e51073cefd", size = 90334, upload-time = "2026-06-05T07:34:02.81Z" },
+]

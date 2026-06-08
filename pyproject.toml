@@ -1,0 +1,15 @@
+[project]
+name = "agent-sdk-examples"
+version = "0"
+description = "Repo-level dev tooling for the agent-sdk examples (ruff)."
+requires-python = ">=3.12"
+
+[dependency-groups]
+# Lint/format tooling, shared across every example. Pinned via uv.lock and
+# kept current by Dependabot's `uv` ecosystem (see .github/dependabot.yml),
+# so CI never silently drifts to a new ruff that changes the rules.
+dev = ["ruff>=0.15.16"]
+
+[tool.uv]
+# This root isn't an installable package — it only carries the dev tools.
+package = false

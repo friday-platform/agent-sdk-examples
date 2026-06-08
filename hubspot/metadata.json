@@ -1,0 +1,14 @@
+{
+  "id": "hubspot",
+  "version": "1.0.0",
+  "description": "Searches HubSpot for support tickets in the configured pipeline stage(s) created within a recent time window and returns their IDs. Deterministic REST search — no LLM, no tool loop.",
+  "entrypoint": "agent.py",
+  "environment": {
+    "required": [
+      {
+        "name": "HUBSPOT_ACCESS_TOKEN",
+        "description": "HubSpot private app token."
+      }
+    ]
+  }
+}

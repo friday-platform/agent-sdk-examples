@@ -1,0 +1,11 @@
+# Ruff config for the whole repo — single source of truth for every example.
+#
+# Each example is a standalone Friday agent (`<name>/agent.py`). Keeping one
+# root config means every example, current and future, is linted and formatted
+# the same way, and CI can run `ruff check .` / `ruff format --check .` once.
+
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = ["E", "W", "F", "I", "B", "UP", "RUF", "SIM"]

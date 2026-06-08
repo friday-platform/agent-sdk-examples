@@ -1,0 +1,26 @@
+version: 2
+updates:
+  # Python dependencies: the root tooling project (ruff) and every example.
+  # "/" is the root uv project (dev tools); the "/*" glob picks up the current
+  # example (hubspot) and any future top-level example without editing this file.
+  - package-ecosystem: "uv"
+    directories:
+      - "/"
+      - "/*"
+    schedule:
+      interval: "weekly"
+    groups:
+      # One PR per example for all its Python bumps, instead of one per package.
+      python:
+        patterns:
+          - "*"
+
+  # GitHub Actions referenced by workflows in .github/workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"

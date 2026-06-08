@@ -72,3 +72,7 @@ environment variables it needs.
 | [`hubspot`](hubspot) | A **deterministic** agent (no LLM): read config from the prompt, make one authenticated REST call with `ctx.http`, return a structured result. |
 
 More to come — each new example lands as its own top-level directory.
+
+## License
+
+[MIT](LICENSE) © Tempest Labs, Inc.

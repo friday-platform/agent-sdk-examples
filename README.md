@@ -105,4 +105,4 @@ uv run ruff format .
 
 ## License
 
-[MIT](LICENSE) © Tempest Labs, Inc.
+[MIT](LICENSE)

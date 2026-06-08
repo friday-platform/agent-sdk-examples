@@ -16,7 +16,7 @@ and MCP calls on the agent's behalf, so your code stays a plain Python function
 - **SDK reference & guides:** [friday-platform/agent-sdk](https://github.com/friday-platform/agent-sdk)
 - **SDK on PyPI:** [`friday-agent-sdk`](https://pypi.org/project/friday-agent-sdk/)
 - **Friday platform docs:** https://docs.hellofriday.ai/
-- **Daemon & `atlas` CLI:** [friday-platform/friday-studio](https://github.com/friday-platform/friday-studio)
+- **Friday Studio:** [friday-platform/friday-studio](https://github.com/friday-platform/friday-studio)
 
 ## Requirements
 
@@ -24,8 +24,8 @@ The SDK is not standalone — an agent runs inside the Friday host:
 
 - Python 3.12+
 - [`uv`](https://docs.astral.sh/uv/) for per-example environments
-- A running [Friday daemon](https://github.com/friday-platform/friday-studio)
-  (provides the host runtime and the `atlas` CLI)
+- A running [Friday Studio](https://github.com/friday-platform/friday-studio)
+  daemon (provides the host runtime)
 - Any credentials an example declares (e.g. `HUBSPOT_ACCESS_TOKEN`), configured
   in the daemon's environment — agents never see raw keys directly
 

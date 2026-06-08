@@ -40,6 +40,7 @@ import json
 import random
 import time
 from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 
 from friday_agent_sdk import AgentContext, HttpError, HttpResponse, agent, err, ok, run
 
@@ -336,14 +337,29 @@ def _header(resp: HttpResponse, name: str) -> str | None:
 
 
 def _retry_after(resp: HttpResponse) -> float | None:
-    """Seconds to wait from the `Retry-After` header, if HubSpot sent one."""
+    """Seconds to wait from the `Retry-After` header, if present.
+
+    Per RFC 7231 the value is either delta-seconds or an HTTP-date; both are
+    handled. Returns None when the header is absent or unparseable (the caller
+    then falls back to exponential backoff); a past/now date yields 0.0.
+    """
     raw = _header(resp, "Retry-After")
     if raw is None:
         return None
+    raw = raw.strip()
     try:
         return float(raw)
     except (TypeError, ValueError):
+        pass
+    try:
+        when = parsedate_to_datetime(raw)
+    except (TypeError, ValueError):
         return None
+    if when is None:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=UTC)
+    return max(0.0, (when - datetime.now(tz=UTC)).total_seconds())
 
 
 def _error_message(resp: HttpResponse) -> str:
@@ -416,7 +432,7 @@ def _search(
 
 @agent(
     id="hubspot",
-    version="1.1.0",
+    version="1.1.1",
     description=(
         "Searches HubSpot for support tickets in the configured pipeline stage(s) "
         "created within a recent time window and returns their IDs. Paginated, with "
@@ -453,8 +469,7 @@ def execute(prompt: str, ctx: AgentContext):
     after: str | None = None
 
     # Page through results (HubSpot returns <=200/page) until we have `limit`
-    # tickets or run out of pages. `limit` is already clamped to the 10k window,
-    # so following the cursor can never page past it.
+    # tickets, run out of pages, or reach HubSpot's 10,000-record search window.
     while len(tickets) < limit:
         page_size = min(_PAGE_SIZE, limit - len(tickets))
         body = _build_search_body(stages, since_ms, page_size, properties, after=after)
@@ -465,9 +480,15 @@ def execute(prompt: str, ctx: AgentContext):
             data = resp.json() or {}
         except Exception as e:
             return err(f"HubSpot search response not JSON: {e}")
-        tickets.extend(_extract_tickets(data))
+
+        page = _extract_tickets(data)
+        tickets.extend(page)
         after = _next_after(data)
-        if after is None:
+        # Stop on the last page (no cursor); on a page that yielded no new
+        # tickets — an empty page that still advertises a cursor would otherwise
+        # loop forever; or once we reach the 10,000-record window past which
+        # HubSpot rejects the next cursor.
+        if after is None or not page or len(tickets) >= _MAX_RESULTS:
             break
 
     tickets = tickets[:limit]

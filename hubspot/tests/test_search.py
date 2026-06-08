@@ -1,6 +1,10 @@
 """Unit tests for the hubspot agent's request-body builder and result parser."""
 
+from datetime import UTC, datetime, timedelta
+from email.utils import format_datetime
+
 import agent
+from friday_agent_sdk import HttpResponse
 
 
 def test_build_search_body_shape():
@@ -61,3 +65,26 @@ def test_extract_tickets_tolerates_malformed_payloads():
     assert agent._extract_tickets({}) == []
     assert agent._extract_tickets({"results": "nope"}) == []
     assert agent._extract_tickets({"results": []}) == []
+
+
+def _resp(headers):
+    return HttpResponse(status=429, headers=headers, body="")
+
+
+def test_retry_after_parses_delta_seconds():
+    assert agent._retry_after(_resp({"Retry-After": "7"})) == 7.0
+
+
+def test_retry_after_absent_or_malformed_is_none():
+    assert agent._retry_after(_resp({})) is None
+    assert agent._retry_after(_resp({"Retry-After": "soon"})) is None
+
+
+def test_retry_after_parses_http_date():
+    # Header name is matched case-insensitively; an HTTP-date is RFC-7231-valid.
+    future = datetime.now(tz=UTC) + timedelta(seconds=120)
+    secs = agent._retry_after(_resp({"retry-after": format_datetime(future, usegmt=True)}))
+    assert secs is not None
+    assert 0 < secs <= 120  # ~120s ahead
+    past = datetime.now(tz=UTC) - timedelta(seconds=120)
+    assert agent._retry_after(_resp({"Retry-After": format_datetime(past, usegmt=True)})) == 0.0

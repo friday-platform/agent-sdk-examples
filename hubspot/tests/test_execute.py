@@ -196,6 +196,29 @@ def test_limit_caps_total_across_pages():
     assert fetch.call_count == 1  # first page already exceeds the limit
 
 
+def test_empty_page_with_cursor_terminates():
+    # An empty page that still advertises a cursor must NOT loop forever.
+    fetch = MagicMock(
+        return_value=_envelope(body=_search_body([], paging={"next": {"after": "x"}}))
+    )
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, OkResult)
+    assert result.data["ticketIds"] == []
+    assert fetch.call_count == 1  # stops immediately, no infinite paging
+
+
+def test_pagination_stops_on_empty_page_after_results():
+    page1 = _envelope(
+        body=_search_body([{"id": "1", "properties": {}}], paging={"next": {"after": "1"}})
+    )
+    empty_with_cursor = _envelope(body=_search_body([], paging={"next": {"after": "2"}}))
+    fetch = MagicMock(side_effect=[page1, empty_with_cursor])
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, OkResult)
+    assert result.data["ticketIds"] == ["1"]
+    assert fetch.call_count == 2  # consumes page 1, then stops on the empty page
+
+
 # --- error paths --------------------------------------------------------
 
 
@@ -261,6 +284,23 @@ def test_retry_after_header_is_honored(monkeypatch):
     )
     agent.execute("", _ctx(fetch=fetch))
     assert slept == [7.0]
+
+
+def test_malformed_retry_after_falls_back_to_backoff(monkeypatch):
+    slept = []
+    monkeypatch.setattr(agent, "_sleep", lambda s: slept.append(s))
+    fetch = MagicMock(
+        side_effect=[
+            _envelope(status=429, headers={"Retry-After": "soon"}, body="{}"),
+            _envelope(body=_search_body([{"id": "1", "properties": {}}])),
+        ]
+    )
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, OkResult)
+    assert result.data["ticketIds"] == ["1"]
+    # unparseable header is ignored -> exponential backoff for attempt 0 (~0.5-1.0s)
+    assert len(slept) == 1
+    assert 0.5 <= slept[0] <= 1.0
 
 
 def test_persistent_5xx_exhausts_retries(monkeypatch):

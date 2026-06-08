@@ -1,17 +1,42 @@
-# agent-sdk-examples
+# Friday Agent SDK — Examples
 
-Worked examples of building Friday agents with the public Python
-[`friday-agent-sdk`](https://pypi.org/project/friday-agent-sdk/). Each top-level
-directory is a standalone, registerable agent you can read, run, and copy as a
-starting point.
+[![CI](https://github.com/friday-platform/agent-sdk-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/friday-platform/agent-sdk-examples/actions/workflows/ci.yml)
+[![friday-agent-sdk](https://img.shields.io/pypi/v/friday-agent-sdk.svg?label=friday-agent-sdk)](https://pypi.org/project/friday-agent-sdk/)
+[![Python versions](https://img.shields.io/pypi/pyversions/friday-agent-sdk.svg)](https://pypi.org/project/friday-agent-sdk/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> **These examples track the [`friday-agent-sdk`](https://pypi.org/project/friday-agent-sdk/) (alpha) — APIs may change.**
+> Pin an exact SDK version when you copy one of these into your own project.
+
+Runnable example agents built with the [Friday Agent SDK](https://github.com/friday-platform/agent-sdk).
+Each one is a standalone, registerable agent you can read, run, and copy as the
+starting point for your own. The host manages credentials and routes LLM, HTTP,
+and MCP calls on the agent's behalf, so your code stays a plain Python function
+— no provider SDKs, no key plumbing.
+
+- **SDK reference & guides:** [friday-platform/agent-sdk](https://github.com/friday-platform/agent-sdk)
+- **SDK on PyPI:** [`friday-agent-sdk`](https://pypi.org/project/friday-agent-sdk/)
+- **Friday platform docs:** https://docs.hellofriday.ai/
+- **Daemon & `atlas` CLI:** [friday-platform/friday-studio](https://github.com/friday-platform/friday-studio)
+
+## Requirements
+
+The SDK is not standalone — an agent runs inside the Friday host:
+
+- Python 3.12+
+- [`uv`](https://docs.astral.sh/uv/) for per-example environments
+- A running [Friday daemon](https://github.com/friday-platform/friday-studio)
+  (provides the host runtime and the `atlas` CLI)
+- Any credentials an example declares (e.g. `HUBSPOT_ACCESS_TOKEN`), configured
+  in the daemon's environment — agents never see raw keys directly
 
 ## The programming model
 
 A Friday agent is a single Python program. You decorate one handler with
 `@agent(...)`, return a result with `ok(...)` / `err(...)`, and call `run()` in
-`__main__`. The SDK handles the transport (NATS): the daemon spawns the process
-per call, hands your handler the `prompt` and an `AgentContext`, and serializes
-whatever you return.
+`__main__`. The SDK handles the transport: the host spawns the process per call,
+hands your handler the `prompt` and an `AgentContext`, and serializes whatever
+you return.
 
 ```python
 from friday_agent_sdk import AgentContext, agent, err, ok, run
@@ -34,29 +59,24 @@ if __name__ == "__main__":
 
 What the `AgentContext` gives you:
 
-- `ctx.http` — outbound HTTP (`ctx.http.fetch(url, method=..., headers=..., body=..., timeout_ms=...)`), raises `HttpError`.
-- `ctx.llm` — LLM calls, when an example needs a model in the loop.
-- `ctx.stream` — progress events, e.g. `ctx.stream.intent("Searching…")`.
-- `ctx.env` — resolved environment values for whatever the decorator declared under `environment`.
-- `ctx.input` — structured input wired from the workspace/FSM (e.g. `ctx.input.config`).
+| Field | Use |
+| --- | --- |
+| `ctx.http` | Outbound HTTP — `ctx.http.fetch(url, method=..., headers=..., body=..., timeout_ms=...)`, raises `HttpError` |
+| `ctx.llm` | LLM calls, when an example needs a model in the loop |
+| `ctx.stream` | Progress events, e.g. `ctx.stream.intent("Searching…")` |
+| `ctx.env` | Resolved values for whatever the decorator declared under `environment` |
+| `ctx.input` | Structured input wired from the workspace (e.g. `ctx.input.config`) |
 
 Capabilities (`http`, `llm`, `stream`) can be `None` when not granted, so guard
 before use — the examples do.
 
-## Requirements
-
-- Python 3.12+
-- [`uv`](https://docs.astral.sh/uv/) (recommended) for per-example environments
-- `friday-agent-sdk>=0.1.8` (declared by each example's `pyproject.toml`)
-- A running Friday daemon + NATS to actually execute an agent
-
-## Running an example
+## Quick start
 
 ```bash
 cd hubspot
-uv sync                       # creates .venv with friday-agent-sdk
+uv sync                       # create .venv from the example's uv.lock
 
-# Register with a local Friday daemon (connects over NATS, handles one call):
+# Register with a local Friday daemon (it then handles one execute call):
 curl -X POST http://localhost:8080/api/agents/register \
   -H 'Content-Type: application/json' \
   -d '{"path": "'"$(pwd)"'/agent.py"}'
@@ -69,9 +89,20 @@ environment variables it needs.
 
 | Example | What it shows |
 | --- | --- |
-| [`hubspot`](hubspot) | A **deterministic** agent (no LLM): read config from the prompt, make one authenticated REST call with `ctx.http`, return a structured result. |
+| [`hubspot`](hubspot) | A **deterministic** agent (no LLM): read config from the prompt, make one authenticated REST call with `ctx.http`, and return a structured result. |
 
 More to come — each new example lands as its own top-level directory.
+
+## Contributing
+
+A new example is a top-level directory with its own `agent.py`, `README.md`,
+`pyproject.toml`, and `uv.lock`. Lint and format are shared from the repo root
+([`ruff.toml`](ruff.toml)) and enforced in CI:
+
+```bash
+uv run ruff check .
+uv run ruff format .
+```
 
 ## License
 

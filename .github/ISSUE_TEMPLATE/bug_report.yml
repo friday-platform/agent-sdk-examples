@@ -1,0 +1,78 @@
+name: Bug report
+description: An example agent is broken or behaves unexpectedly.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug — the more detail, the faster we can fix it.
+
+        For bugs in the `friday-agent-sdk` package itself (not an example), please file at [friday-platform/agent-sdk](https://github.com/friday-platform/agent-sdk/issues). For security issues, do **not** open a public issue — see [SECURITY.md](https://github.com/friday-platform/agent-sdk-examples/blob/main/SECURITY.md).
+  - type: input
+    id: example
+    attributes:
+      label: Which example?
+      description: The example directory the bug is in.
+      placeholder: hubspot
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A clear, concise description of the bug.
+      placeholder: When I do X, Y happens — but I expected Z.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps, prompt/config, or commands that reproduce the bug. Redact any real tokens or customer data.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include any error message, traceback, or unexpected output.
+    validations:
+      required: true
+  - type: input
+    id: sdk-version
+    attributes:
+      label: friday-agent-sdk version
+      description: From the example's `uv.lock`, or `uv pip show friday-agent-sdk`.
+      placeholder: "0.1.9"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python --version`.
+      placeholder: "3.12.7"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 14.5 / Ubuntu 24.04 / ...
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Logs, related issues, anything else. Redact any real tokens/PII.
+    validations:
+      required: false

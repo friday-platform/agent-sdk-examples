@@ -94,19 +94,15 @@ More to come — each new example lands as its own top-level directory.
 
 ## Contributing
 
-A new example is a top-level directory with its own `agent.py`, `README.md`,
-`pyproject.toml`, `uv.lock`, and a `tests/` suite. Lint and format are shared
-from the repo root ([`ruff.toml`](ruff.toml)); tests run per example. CI
-enforces all three:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, how to add a new example, and
+the checks CI runs. Quick version:
 
 ```bash
-# lint + format (whole repo, from the root)
-uv run ruff check .
-uv run ruff format .
-
-# tests (from an example directory)
-cd hubspot && uv run pytest
+uv run ruff check . && uv run ruff format --check .   # lint + format (repo root)
+cd hubspot && uv run pytest                            # tests (per example)
 ```
+
+Security issues: see [SECURITY.md](SECURITY.md) — please don't open a public issue.
 
 ## License
 

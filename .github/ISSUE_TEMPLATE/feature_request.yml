@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new example or an improvement to an existing one.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Please describe the use case before proposing a solution — it helps us pick the right design.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to build or learn? What's missing or unclear today?
+      placeholder: I want an example that shows how to ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed example or change
+      description: An API sketch, the integration it would demonstrate, or pseudocode. Skip if you'd rather discuss the problem first.
+      render: python
+    validations:
+      required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: What does this touch?
+      multiple: true
+      options:
+        - A new example agent
+        - An existing example (e.g. hubspot)
+        - Repo tooling / CI
+        - Docs / README
+        - Other / not sure
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+    validations:
+      required: false

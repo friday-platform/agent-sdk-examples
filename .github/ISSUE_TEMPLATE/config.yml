@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/friday-platform/agent-sdk-examples/security/advisories/new
+    about: Report a security vulnerability privately. Do not open a public issue.
+  - name: Friday Agent SDK (the package)
+    url: https://github.com/friday-platform/agent-sdk/issues
+    about: For bugs or requests in the friday-agent-sdk package itself — not these examples.
+  - name: Friday platform / daemon
+    url: https://hellofriday.ai
+    about: For issues with the Friday daemon, runtime, or platform.

@@ -2,13 +2,13 @@
 
 **Date:** 2026-06-08
 **Branch:** main (no feature branch; reviewing the `hubspot/` agent + tests as they stand on HEAD `371dc8b`)
-**Verdict:** Needs Work → **Resolved** (v1.1.1)
+**Verdict:** Needs Work → **Resolved**
 
-> **Update (2026-06-08):** All findings below were fixed in v1.1.1 — the
-> pagination loop now breaks on a no-progress/empty page and an explicit 10k
-> bound; the misleading comment is gone; `_retry_after` handles the RFC-7231
-> HTTP-date form; and regression tests cover the empty-page-with-cursor hang and
-> the malformed-`Retry-After` fallback (43 tests, all green). The two
+> **Update (2026-06-08):** All findings below were fixed — the pagination loop
+> now breaks on a no-progress/empty page and an explicit 10k bound; the
+> misleading comment is gone; `_retry_after` handles the RFC-7231 HTTP-date
+> form; and regression tests cover the empty-page-with-cursor hang and the
+> malformed-`Retry-After` fallback (43 tests, all green). The two
 > "Needs Decision" items (redundant `response` field, unsurfaced `properties`
 > knob) were left for the author and are unchanged.
 

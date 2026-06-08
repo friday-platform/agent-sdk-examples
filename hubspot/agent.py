@@ -432,7 +432,7 @@ def _search(
 
 @agent(
     id="hubspot",
-    version="1.1.1",
+    version="1.0.0",
     description=(
         "Searches HubSpot for support tickets in the configured pipeline stage(s) "
         "created within a recent time window and returns their IDs. Paginated, with "

@@ -104,9 +104,9 @@ def test_resolve_reads_config_envelope_from_prompt():
 
 def test_resolve_clamps_out_of_range_values():
     _, within, limit, _ = agent._resolve_config(
-        json.dumps({"config": {"limit": 9999, "withinMinutes": 999999}}), AgentContext()
+        json.dumps({"config": {"limit": 99999, "withinMinutes": 999999}}), AgentContext()
     )
-    assert limit == 200  # HubSpot caps a search page at 200
+    assert limit == 10000  # _MAX_RESULTS (HubSpot's 10k search window)
     assert within == 7 * 24 * 60  # _MAX_WITHIN_MINUTES (7 days)
 
     _, within, limit, _ = agent._resolve_config(

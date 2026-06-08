@@ -26,6 +26,20 @@ def test_build_search_body_uses_string_epoch_for_createdate():
     assert isinstance(value, str)
 
 
+def test_build_search_body_includes_after_cursor_only_when_given():
+    assert "after" not in agent._build_search_body(["1"], 1, 10, ["createdate"])
+    body = agent._build_search_body(["1"], 1, 10, ["createdate"], after="200")
+    assert body["after"] == "200"
+
+
+def test_next_after_reads_paging_cursor():
+    assert agent._next_after({"paging": {"next": {"after": "100"}}}) == "100"
+    assert agent._next_after({"paging": {"next": {"after": 100}}}) == "100"
+    assert agent._next_after({"results": []}) is None  # no paging -> last page
+    assert agent._next_after({"paging": {}}) is None
+    assert agent._next_after(None) is None
+
+
 def test_extract_tickets_maps_fields_and_skips_bad_rows():
     data = {
         "results": [

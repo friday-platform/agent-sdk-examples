@@ -46,11 +46,20 @@ def _ctx(*, token="test-token", fetch=None, stream_emit=None, env=None):
     return ctx
 
 
-def _sent_request(fetch):
-    """Decode the JSON request the agent passed through Http.fetch()."""
-    sent = json.loads(fetch.call_args[0][0])
+def _decode(raw):
+    sent = json.loads(raw)
     sent["body"] = json.loads(sent["body"])
     return sent
+
+
+def _sent_request(fetch):
+    """Decode the JSON request from the agent's most recent Http.fetch() call."""
+    return _decode(fetch.call_args[0][0])
+
+
+def _sent_request_at(fetch, index):
+    """Decode the JSON request from the agent's nth Http.fetch() call."""
+    return _decode(fetch.call_args_list[index][0][0])
 
 
 # --- success path -------------------------------------------------------
@@ -135,8 +144,9 @@ def test_prompt_config_overrides_defaults():
     assert before - within_ms <= int(date_filter["value"]) <= after - within_ms
 
 
-def test_limit_is_clamped_to_hubspot_max():
-    fetch = _ok_fetch([_TICKET])
+def test_page_size_capped_at_200():
+    # limit is a total (here 9999); each page still requests at most 200.
+    fetch = _ok_fetch([_TICKET])  # one page, no cursor -> single request
     agent.execute(json.dumps({"config": {"limit": 9999}}), _ctx(fetch=fetch))
     assert _sent_request(fetch)["body"]["limit"] == 200
 
@@ -149,19 +159,41 @@ def test_emits_intent_before_searching():
     assert "Searching HubSpot" in payload
 
 
-def test_ignores_pagination_cursor_single_request():
-    # Documents CURRENT behavior: the agent fetches exactly one page and
-    # ignores paging.next.after — i.e. it silently truncates past the page
-    # limit. See the improvements proposal (pagination / 10k-window gap).
-    fetch = _ok_fetch(
-        [{"id": "1", "properties": {}}],
-        total=500,
-        paging={"next": {"after": "100", "link": "?after=100"}},
+def test_follows_pagination_cursor_across_pages():
+    page1 = _envelope(
+        body=_search_body([{"id": "1", "properties": {}}], paging={"next": {"after": "1"}})
     )
+    page2 = _envelope(
+        body=_search_body([{"id": "2", "properties": {}}], paging={"next": {"after": "2"}})
+    )
+    page3 = _envelope(body=_search_body([{"id": "3", "properties": {}}]))  # no paging -> last
+    fetch = MagicMock(side_effect=[page1, page2, page3])
+
     result = agent.execute("", _ctx(fetch=fetch))
+
     assert isinstance(result, OkResult)
-    assert result.data["ticketIds"] == ["1"]
-    assert fetch.call_count == 1
+    assert result.data["ticketIds"] == ["1", "2", "3"]
+    assert fetch.call_count == 3
+    # the 2nd and 3rd requests carry the cursor from the previous page
+    assert _sent_request_at(fetch, 1)["body"]["after"] == "1"
+    assert _sent_request_at(fetch, 2)["body"]["after"] == "2"
+
+
+def test_limit_caps_total_across_pages():
+    # A page that always advertises a next cursor; limit stops the walk.
+    page = _envelope(
+        body=_search_body(
+            [{"id": str(i), "properties": {}} for i in range(200)],
+            paging={"next": {"after": "x"}},
+        )
+    )
+    fetch = MagicMock(return_value=page)
+
+    result = agent.execute(json.dumps({"config": {"limit": 5}}), _ctx(fetch=fetch))
+
+    assert isinstance(result, OkResult)
+    assert result.data["count"] == 5
+    assert fetch.call_count == 1  # first page already exceeds the limit
 
 
 # --- error paths --------------------------------------------------------
@@ -183,20 +215,23 @@ def test_missing_http_capability_errors():
     assert result.error == "HTTP capability unavailable"
 
 
-def test_transport_error_is_reported():
+def test_transport_error_retried_then_reported(monkeypatch):
+    monkeypatch.setattr(agent, "_sleep", lambda _s: None)
     fetch = MagicMock(side_effect=RuntimeError("connection refused"))
     result = agent.execute("", _ctx(fetch=fetch))
     assert isinstance(result, ErrResult)
     assert result.error.startswith("HubSpot ticket search failed:")
     assert "connection refused" in result.error
+    assert fetch.call_count == 1 + agent._MAX_RETRIES
 
 
-def test_http_4xx_is_reported_with_status_and_body():
-    fetch = MagicMock(return_value=_envelope(status=429, body="rate limited"))
+def test_terminal_4xx_is_reported_without_retry():
+    fetch = MagicMock(return_value=_envelope(status=400, body="bad filter"))
     result = agent.execute("", _ctx(fetch=fetch))
     assert isinstance(result, ErrResult)
-    assert "429" in result.error
-    assert "rate limited" in result.error
+    assert "400" in result.error
+    assert "bad filter" in result.error
+    assert fetch.call_count == 1  # 400 is terminal — not retried
 
 
 def test_non_json_body_is_reported():
@@ -204,3 +239,66 @@ def test_non_json_body_is_reported():
     result = agent.execute("", _ctx(fetch=fetch))
     assert isinstance(result, ErrResult)
     assert "not JSON" in result.error
+
+
+# --- retries & error classification -------------------------------------
+
+
+def test_retries_on_429_then_succeeds(monkeypatch):
+    monkeypatch.setattr(agent, "_sleep", lambda _s: None)
+    fetch = MagicMock(
+        side_effect=[
+            _envelope(status=429, headers={"Retry-After": "1"}, body='{"category": "RATE_LIMITS"}'),
+            _envelope(body=_search_body([{"id": "1", "properties": {}}])),
+        ]
+    )
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, OkResult)
+    assert result.data["ticketIds"] == ["1"]
+    assert fetch.call_count == 2
+
+
+def test_retry_after_header_is_honored(monkeypatch):
+    slept = []
+    monkeypatch.setattr(agent, "_sleep", lambda s: slept.append(s))
+    fetch = MagicMock(
+        side_effect=[
+            _envelope(status=429, headers={"Retry-After": "7"}, body="{}"),
+            _envelope(body=_search_body([])),
+        ]
+    )
+    agent.execute("", _ctx(fetch=fetch))
+    assert slept == [7.0]
+
+
+def test_persistent_5xx_exhausts_retries(monkeypatch):
+    monkeypatch.setattr(agent, "_sleep", lambda _s: None)
+    fetch = MagicMock(return_value=_envelope(status=503, body="{}"))
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, ErrResult)
+    assert "503" in result.error
+    assert fetch.call_count == 1 + agent._MAX_RETRIES
+
+
+def test_403_missing_scopes_fails_fast_and_surfaces_correlation_id(monkeypatch):
+    slept = []
+    monkeypatch.setattr(agent, "_sleep", lambda s: slept.append(s))
+    fetch = MagicMock(
+        return_value=_envelope(
+            status=403,
+            body=json.dumps(
+                {
+                    "category": "MISSING_SCOPES",
+                    "correlationId": "abc-123",
+                    "message": "token is missing required scopes",
+                }
+            ),
+        )
+    )
+    result = agent.execute("", _ctx(fetch=fetch))
+    assert isinstance(result, ErrResult)
+    assert "MISSING_SCOPES" in result.error
+    assert "abc-123" in result.error
+    assert "token is missing required scopes" in result.error
+    assert fetch.call_count == 1  # config error — not retried
+    assert slept == []  # and never slept

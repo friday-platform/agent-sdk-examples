@@ -132,50 +132,30 @@ _CONFIG_KEYS = (
 )
 
 
-def _scan_balanced_json(text: str) -> list[dict]:
-    """Extract every top-level balanced `{...}` object from text as parsed dicts.
+def _scan_json_objects(text: str) -> list[dict]:
+    """Extract every top-level JSON object embedded in `text` as parsed dicts.
 
     The runtime prompt may concatenate our config envelope with unrelated JSON
-    (e.g. a trigger/signal payload), so a single greedy parse isn't enough — we
-    collect all objects and let the caller pick the one shaped like config.
+    (e.g. a trigger/signal payload), so a single parse isn't enough — we collect
+    all objects and let the caller pick the one shaped like config. We let the
+    stdlib parser find each object's extent via `raw_decode` (which returns the
+    value plus the index where it ended) rather than hand-matching braces, so
+    strings, escapes, and nesting are handled for free.
     """
+    decoder = json.JSONDecoder()
     out: list[dict] = []
     i = 0
     while i < len(text):
         if text[i] != "{":
             i += 1
             continue
-        depth = 0
-        in_string = False
-        end = i
-        while end < len(text):
-            ch = text[end]
-            if in_string:
-                if ch == "\\":
-                    end += 1
-                elif ch == '"':
-                    in_string = False
-                end += 1
-                continue
-            if ch == '"':
-                in_string = True
-            elif ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    break
-            end += 1
-        if depth == 0 and not in_string:
-            try:
-                parsed = json.loads(text[i : end + 1])
-                if isinstance(parsed, dict):
-                    out.append(parsed)
-            except (ValueError, json.JSONDecodeError):
-                pass
-            i = end + 1
-        else:
+        try:
+            obj, end = decoder.raw_decode(text, i)
+        except json.JSONDecodeError:
             i += 1
+            continue
+        out.append(obj)  # text[i] == "{" so obj is always a dict
+        i = end
     return out
 
 
@@ -209,7 +189,7 @@ def _resolve_config(prompt: str, ctx: AgentContext) -> tuple[list[str], int, int
     raw: dict | None = None
 
     # 1. Prompt is authoritative — find the object shaped like our config.
-    for obj in _scan_balanced_json(prompt or ""):
+    for obj in _scan_json_objects(prompt or ""):
         candidate = _config_from_obj(obj)
         if candidate is not None:
             raw = candidate

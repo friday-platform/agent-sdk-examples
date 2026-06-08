@@ -43,19 +43,25 @@ def test_pick_returns_first_present_non_null():
 # --- balanced-JSON scanning ---------------------------------------------
 
 
-def test_scan_balanced_json_extracts_each_object():
-    assert agent._scan_balanced_json('{"x": 1} noise {"y": 2}') == [{"x": 1}, {"y": 2}]
+def test_scan_json_objects_extracts_each_object():
+    assert agent._scan_json_objects('{"x": 1} noise {"y": 2}') == [{"x": 1}, {"y": 2}]
 
 
-def test_scan_balanced_json_handles_nesting_and_strings():
-    assert agent._scan_balanced_json('{"a": {"b": 1}}') == [{"a": {"b": 1}}]
-    assert agent._scan_balanced_json('{"s": "a{b}c"}') == [{"s": "a{b}c"}]
-    assert agent._scan_balanced_json(r'{"s": "a\"b"}') == [{"s": 'a"b'}]
+def test_scan_json_objects_handles_nesting_and_strings():
+    assert agent._scan_json_objects('{"a": {"b": 1}}') == [{"a": {"b": 1}}]
+    assert agent._scan_json_objects('{"s": "a{b}c"}') == [{"s": "a{b}c"}]
+    assert agent._scan_json_objects(r'{"s": "a\"b"}') == [{"s": 'a"b'}]
 
 
-def test_scan_balanced_json_skips_invalid():
-    assert agent._scan_balanced_json("{not json}") == []
-    assert agent._scan_balanced_json("no objects here") == []
+def test_scan_json_objects_skips_invalid():
+    assert agent._scan_json_objects("{not json}") == []
+    assert agent._scan_json_objects("no objects here") == []
+
+
+def test_scan_json_objects_recovers_object_after_invalid_prefix():
+    # The real parser keeps scanning past an invalid `{`, recovering the valid
+    # object that follows (a brace-counting scanner would skip the whole span).
+    assert agent._scan_json_objects('{bad {"good": 1}') == [{"good": 1}]
 
 
 # --- config envelope detection ------------------------------------------

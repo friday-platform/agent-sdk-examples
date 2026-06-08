@@ -452,9 +452,8 @@ def _search(
     },
 )
 def execute(prompt: str, ctx: AgentContext):
-    if ctx.http is None:
-        return err("HTTP capability unavailable")
-
+    # Capabilities (ctx.http, ctx.stream, ...) are always initialized by the
+    # host — never None — so we use them directly without guarding.
     token = (ctx.env or {}).get("HUBSPOT_ACCESS_TOKEN", "")
     if not token:
         return err("HUBSPOT_ACCESS_TOKEN is not set")
@@ -464,11 +463,10 @@ def execute(prompt: str, ctx: AgentContext):
     now_ms = int(datetime.now(tz=UTC).timestamp() * 1000)
     since_ms = now_ms - within_minutes * 60 * 1000
 
-    if ctx.stream is not None:
-        ctx.stream.intent(
-            f"Searching HubSpot for tickets in stage(s) {', '.join(stages)} "
-            f"from the last {within_minutes}m"
-        )
+    ctx.stream.intent(
+        f"Searching HubSpot for tickets in stage(s) {', '.join(stages)} "
+        f"from the last {within_minutes}m"
+    )
 
     headers = _hs_headers(token)
     tickets: list[dict] = []

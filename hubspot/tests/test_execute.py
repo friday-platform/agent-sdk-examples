@@ -207,14 +207,6 @@ def test_missing_token_errors_without_calling_http():
     fetch.assert_not_called()
 
 
-def test_missing_http_capability_errors():
-    ctx = _ctx(fetch=_ok_fetch([]))
-    ctx.http = None
-    result = agent.execute("", ctx)
-    assert isinstance(result, ErrResult)
-    assert result.error == "HTTP capability unavailable"
-
-
 def test_transport_error_retried_then_reported(monkeypatch):
     monkeypatch.setattr(agent, "_sleep", lambda _s: None)
     fetch = MagicMock(side_effect=RuntimeError("connection refused"))

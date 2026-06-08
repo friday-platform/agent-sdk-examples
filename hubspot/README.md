@@ -54,8 +54,10 @@ last 60 minutes, limit 100), so an empty prompt also works.
 ```
 
 Output: a structured result whose `response` field holds the bare JSON array of
-IDs, with `ticketIds` / `tickets` as structured equivalents (the IDs below are
-illustrative):
+IDs, with `ticketIds` / `tickets` as structured equivalents (the IDs and
+timestamp below are illustrative). `createdAt` is passed through verbatim from
+HubSpot, which returns `createdate` as an ISO-8601 string in v3 search responses
+(epoch-ms is only the filter *input* format):
 
 ```json
 {
@@ -63,7 +65,7 @@ illustrative):
   "ticketIds": ["1000000001", "1000000002"],
   "count": 2,
   "tickets": [
-    {"id": "1000000001", "createdAt": "1717500000000", "pipelineStage": "1"}
+    {"id": "1000000001", "createdAt": "2024-06-04T15:20:00.000Z", "pipelineStage": "1"}
   ]
 }
 ```

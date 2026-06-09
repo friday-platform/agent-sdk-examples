@@ -1,4 +1,4 @@
-# hubspot
+# hubspot-search
 
 The first example in this repo, and a good template for a **deterministic** Friday
 agent: a paginated REST search, no LLM, no tool loop.
@@ -26,7 +26,7 @@ local Friday daemon (it connects over NATS and handles one execute call):
 ```bash
 curl -X POST http://localhost:8080/api/agents/register \
   -H 'Content-Type: application/json' \
-  -d '{"path": "'"$(pwd)"'/hubspot/agent.py"}'
+  -d '{"path": "'"$(pwd)"'/hubspot-search/agent.py"}'
 ```
 
 ## Input / Output

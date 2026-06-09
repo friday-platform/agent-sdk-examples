@@ -1,4 +1,4 @@
-"""Integration tests for the hubspot agent's execute() handler.
+"""Integration tests for the hubspot-search agent's execute() handler.
 
 `@agent` returns the handler unchanged, so we call `execute(prompt, ctx)`
 directly with a hand-built AgentContext whose HTTP capability is backed by a

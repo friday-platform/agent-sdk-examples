@@ -1,4 +1,4 @@
-"""Unit tests for the hubspot agent's pure config-parsing helpers.
+"""Unit tests for the hubspot-search agent's pure config-parsing helpers.
 
 These functions carry the agent's trickiest logic — pulling a config envelope
 out of a prompt that may also contain unrelated JSON — so they're worth testing

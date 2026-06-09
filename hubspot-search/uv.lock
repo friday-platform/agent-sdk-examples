@@ -24,7 +24,7 @@ wheels = [
 ]
 
 [[package]]
-name = "friday-hubspot-agent"
+name = "friday-hubspot-search-agent"
 version = "1.0.0"
 source = { virtual = "." }
 dependencies = [

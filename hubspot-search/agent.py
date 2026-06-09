@@ -1,4 +1,4 @@
-"""hubspot — searches HubSpot for new support tickets and returns their IDs.
+"""hubspot-search — searches HubSpot for new support tickets and returns their IDs.
 
 A deterministic Friday agent (no LLM, no tool loop): it runs the HubSpot CRM v3
 ticket search for the configured pipeline stage(s) created within a recent time
@@ -431,7 +431,7 @@ def _search(
 
 
 @agent(
-    id="hubspot",
+    id="hubspot-search",
     version="1.0.0",
     description=(
         "Searches HubSpot for support tickets in the configured pipeline stage(s) "

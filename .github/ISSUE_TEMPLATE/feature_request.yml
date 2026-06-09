@@ -30,7 +30,7 @@ body:
       multiple: true
       options:
         - A new example agent
-        - An existing example (e.g. hubspot)
+        - An existing example (e.g. hubspot-search)
         - Repo tooling / CI
         - Docs / README
         - Other / not sure

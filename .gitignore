@@ -9,3 +9,6 @@ __pycache__/
 *.db
 .DS_Store
 .coverage
+
+# Local-only working docs (e.g. code-review notes); not published with the repo.
+docs/

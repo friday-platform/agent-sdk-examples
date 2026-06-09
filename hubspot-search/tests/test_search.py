@@ -1,4 +1,4 @@
-"""Unit tests for the hubspot agent's request-body builder and result parser."""
+"""Unit tests for the hubspot-search agent's request-body builder and result parser."""
 
 from datetime import UTC, datetime, timedelta
 from email.utils import format_datetime

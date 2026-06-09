@@ -2,7 +2,7 @@ version: 2
 updates:
   # Python dependencies: the root tooling project (ruff) and every example.
   # "/" is the root uv project (dev tools); the "/*" glob picks up the current
-  # example (hubspot) and any future top-level example without editing this file.
+  # example (hubspot-search) and any future top-level example without editing this file.
   - package-ecosystem: "uv"
     directories:
       - "/"

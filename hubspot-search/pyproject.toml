@@ -1,5 +1,5 @@
 [project]
-name = "friday-hubspot-agent"
+name = "friday-hubspot-search-agent"
 version = "1.0.0"
 description = "Deterministic HubSpot ticket-search agent — searches the configured pipeline stage(s) for tickets created within a recent window and returns their IDs. Paginated, with retries on rate-limit/5xx."
 readme = "README.md"

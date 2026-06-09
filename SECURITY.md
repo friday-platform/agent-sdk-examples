@@ -27,7 +27,7 @@ the latest state of `main`; there are no versioned releases to back-port to.
 
 In scope:
 
-- The example agents in this repository (e.g. `hubspot/`) and their CI/tooling.
+- The example agents in this repository (e.g. `hubspot-search/`) and their CI/tooling.
 
 Out of scope — please report to the appropriate project:
 

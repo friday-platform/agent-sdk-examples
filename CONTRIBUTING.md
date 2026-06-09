@@ -34,7 +34,7 @@ git clone https://github.com/friday-platform/agent-sdk-examples
 cd agent-sdk-examples
 
 # Each example is its own uv project:
-cd hubspot
+cd hubspot-search
 uv sync
 ```
 
@@ -51,7 +51,7 @@ uv run ruff check .
 uv run ruff format --check .
 
 # Tests — from an example directory
-cd hubspot && uv run pytest
+cd hubspot-search && uv run pytest
 ```
 
 ## Adding a new example
@@ -76,7 +76,7 @@ Then add a row to the **Examples** table in the root [`README.md`](README.md).
 5. Follow existing code style — `ruff` ([`ruff.toml`](ruff.toml)).
 6. Write a clear commit message in
    [Conventional Commits](https://www.conventionalcommits.org/) style
-   (e.g. `feat(hubspot): add pagination`).
+   (e.g. `feat(hubspot-search): add pagination`).
 
 > These examples are unreleased and unversioned — please **don't** bump the
 > `version` field in `pyproject.toml` / `metadata.json` / the `@agent` decorator.

@@ -72,7 +72,7 @@ before use — the examples do.
 ## Quick start
 
 ```bash
-cd hubspot
+cd hubspot-search
 uv sync                       # create .venv from the example's uv.lock
 
 # Register with a local Friday daemon (it then handles one execute call):
@@ -88,7 +88,7 @@ environment variables it needs.
 
 | Example | What it shows |
 | --- | --- |
-| [`hubspot`](hubspot) | A **deterministic** agent (no LLM): read config from the prompt, make one authenticated REST call with `ctx.http`, and return a structured result. |
+| [`hubspot-search`](hubspot-search) | A **deterministic** agent (no LLM): read config from the prompt, make one authenticated REST call with `ctx.http`, and return a structured result. |
 
 More to come — each new example lands as its own top-level directory.
 
@@ -99,7 +99,7 @@ the checks CI runs. Quick version:
 
 ```bash
 uv run ruff check . && uv run ruff format --check .   # lint + format (repo root)
-cd hubspot && uv run pytest                            # tests (per example)
+cd hubspot-search && uv run pytest                     # tests (per example)
 ```
 
 Security issues: see [SECURITY.md](SECURITY.md) — please don't open a public issue.

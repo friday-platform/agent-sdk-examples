@@ -14,7 +14,7 @@ body:
     attributes:
       label: Which example?
       description: The example directory the bug is in.
-      placeholder: hubspot
+      placeholder: hubspot-search
     validations:
       required: true
   - type: textarea

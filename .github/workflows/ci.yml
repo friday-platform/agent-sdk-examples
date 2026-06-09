@@ -32,6 +32,6 @@ jobs:
         uses: astral-sh/setup-uv@v8.2.0
 
       # Each example is its own uv project; run its pytest suite from its dir.
-      - name: hubspot
+      - name: hubspot-search
         run: uv run --locked pytest
-        working-directory: hubspot
+        working-directory: hubspot-search

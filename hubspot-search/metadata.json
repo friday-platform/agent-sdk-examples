@@ -1,5 +1,5 @@
 {
-  "id": "hubspot",
+  "id": "hubspot-search",
   "version": "1.0.0",
   "description": "Searches HubSpot for support tickets in the configured pipeline stage(s) created within a recent time window and returns their IDs. Paginated, with retries on rate-limit/5xx. Deterministic REST search — no LLM, no tool loop.",
   "entrypoint": "agent.py",
